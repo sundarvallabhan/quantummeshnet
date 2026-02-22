@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumMeshNet — Quantum Networking Research</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020a14;
+    --blue-deep: #041628;
+    --blue-mid: #0a2a4a;
+    --blue-accent: #0d6efd;
+    --blue-bright: #00c8ff;
+    --blue-glow: #00aaff33;
+    --text: #c8dff0;
+    --text-dim: #4a7a9b;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridPulse 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes gridPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Scanning line */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -100%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-bright), transparent);
+    animation: scan 6s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  @keyframes scan {
+    0% { top: -2px; }
+    100% { top: 100vh; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* NAV */
+  nav {
+    padding: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0,200,255,0.1);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--blue-bright);
+    letter-spacing: 0.15em;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 0.2s;
+  }
+
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 0.4s;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #00ff88;
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* HERO */
+  .hero {
+    padding: 6rem 0 4rem;
+    position: relative;
+  }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--blue-bright);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards 0.6s;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: var(--sans);
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: slideUp 0.8s ease forwards 0.8s;
+    margin-bottom: 1rem;
+  }
+
+  .hero-title span {
+    display: block;
+    color: var(--blue-bright);
+    text-shadow: 0 0 40px rgba(0,200,255,0.4);
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--text-dim);
+    max-width: 600px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 1.2s;
+    margin-bottom: 3rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 4rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 1.4s;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    border-left: 2px solid var(--blue-accent);
+    padding-left: 1rem;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    color: var(--blue-bright);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--blue-accent), transparent);
+    margin: 3rem 0;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 1.6s;
+  }
+
+  /* RESEARCH AREAS */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--blue-bright);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 1.8s;
+  }
+
+  .research-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .research-card {
+    background: var(--blue-deep);
+    border: 1px solid rgba(0,200,255,0.08);
+    border-top: 2px solid var(--blue-accent);
+    padding: 1.8rem;
+    transition: border-color 0.3s, transform 0.3s, background 0.3s;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+  }
+
+  .research-card:nth-child(1) { animation-delay: 2.0s; }
+  .research-card:nth-child(2) { animation-delay: 2.1s; }
+  .research-card:nth-child(3) { animation-delay: 2.2s; }
+
+  .research-card:hover {
+    border-color: var(--blue-bright);
+    transform: translateY(-4px);
+    background: var(--blue-mid);
+  }
+
+  .card-num {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--blue-bright);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+    letter-spacing: 0.2em;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e0f0ff;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.03em;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* TERMINAL BLOCK */
+  .terminal {
+    background: #010c18;
+    border: 1px solid rgba(0,200,255,0.15);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 4rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 2.4s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminal::before {
+    content: '● ● ●';
+    display: block;
+    color: var(--text-dim);
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .terminal-line {
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+  }
+
+  .terminal-line .prompt { color: var(--blue-bright); }
+  .terminal-line .output { color: #00ff88; }
+  .terminal-line .comment { color: #2a5a7a; }
+
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--blue-bright);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid rgba(0,200,255,0.08);
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 2.8s;
+  }
+
+  .footer-brand {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--blue-bright); }
+
+  /* Floating node animation */
+  .nodes {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .node {
+    position: absolute;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--blue-bright);
+    opacity: 0;
+    animation: float linear infinite;
+  }
+
+  @keyframes float {
+    0% { opacity: 0; transform: translateY(100vh) scale(0); }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-10vh) scale(1.5); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating nodes -->
+<div class="nodes" id="nodes"></div>
+
+<div class="container">
+  <nav>
+    <div class="nav-logo">QUANTUMMESHNET.COM</div>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      RESEARCH ACTIVE
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">// Distributed Quantum Network Research</div>
+    <h1 class="hero-title">
+      Quantum<br><span>MeshNet</span>
+    </h1>
+    <p class="hero-subtitle">
+      Exploring the architecture of distributed quantum networks — where entanglement meets mesh topology to redefine secure, high-fidelity communication at scale.
+    </p>
+
+    <div class="stats-row">
+      <div class="stat">
+        <span class="stat-value">Q-NET</span>
+        <span class="stat-label">Research Division</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">2026</span>
+        <span class="stat-label">Est. Year</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">∞</span>
+        <span class="stat-label">Entanglement Nodes</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <div class="section-label">// Research Focus Areas</div>
+
+  <div class="research-grid">
+    <div class="research-card">
+      <div class="card-num">01 // TOPOLOGY</div>
+      <div class="card-title">Quantum Mesh Architecture</div>
+      <div class="card-desc">Investigating multi-node quantum entanglement structures capable of sustaining coherence across distributed mesh configurations in real-world environments.</div>
+    </div>
+    <div class="research-card">
+      <div class="card-num">02 // PROTOCOL</div>
+      <div class="card-title">Entanglement Routing</div>
+      <div class="card-desc">Developing novel routing protocols that leverage quantum state fidelity as a primary routing metric — beyond classical latency and bandwidth constraints.</div>
+    </div>
+    <div class="research-card">
+      <div class="card-num">03 // SECURITY</div>
+      <div class="card-title">QKD at Mesh Scale</div>
+      <div class="card-desc">Extending Quantum Key Distribution beyond point-to-point links into full mesh topologies, enabling provably secure communication across any two nodes.</div>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <div class="terminal-line"><span class="prompt">$ </span>qnet --status</div>
+    <div class="terminal-line"><span class="output">▸ Node coherence: STABLE</span></div>
+    <div class="terminal-line"><span class="output">▸ Entanglement fidelity: 99.7%</span></div>
+    <div class="terminal-line"><span class="output">▸ Mesh nodes active: 12 / 12</span></div>
+    <div class="terminal-line"><span class="comment">// Research infrastructure nominal. Next publication cycle: Q3 2026.</span></div>
+    <div class="terminal-line"><span class="prompt">$ </span><span class="cursor"></span></div>
+  </div>
+
+  <footer>
+    <div class="footer-brand">© 2026 QUANTUMMESHNET — ALL RIGHTS RESERVED</div>
+    <div class="footer-links">
+      <a href="#">RESEARCH</a>
+      <a href="#">PUBLICATIONS</a>
+      <a href="#">CONTACT</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // Generate floating nodes
+  const nodesEl = document.getElementById('nodes');
+  for (let i = 0; i < 25; i++) {
+    const node = document.createElement('div');
+    node.className = 'node';
+    node.style.left = Math.random() * 100 + 'vw';
+    node.style.animationDuration = (8 + Math.random() * 15) + 's';
+    node.style.animationDelay = (Math.random() * 10) + 's';
+    node.style.width = node.style.height = (2 + Math.random() * 3) + 'px';
+    nodesEl.appendChild(node);
+  }
+</script>
+</body>
+</html>
